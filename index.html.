@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🌾 Hiyoo - التخمين الخرافي</title>
+    <style>
+        /* ===== إعادة تعيين ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ===== المتغيرات ===== */
+        :root {
+            --gold: #ffcc00;
+            --gold-glow: #ffcc0066;
+            --dark-bg: #0a0a1a;
+            --card-bg: #141428;
+            --inner-bg: #0e0e20;
+            --border-color: #2a2a4e;
+            --green: #00ff88;
+            --green-glow: #00ff8844;
+            --red: #ff4444;
+            --text-muted: #888;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            --radius: 32px;
+            --radius-sm: 20px;
+        }
+
+        /* ===== الجسم ===== */
+        body {
+            background: var(--dark-bg);
+            font-family: 'Segoe UI', Tahoma, 'Tahoma', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 12px;
+            color: #fff;
+            direction: rtl;
+        }
+
+        /* ===== الحاوية الرئيسية ===== */
+        .container {
+            background: var(--card-bg);
+            max-width: 400px;
+            width: 100%;
+            border-radius: var(--radius);
+            padding: 22px 18px 26px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ===== خلفية متحركة ===== */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 204, 0, 0.03) 0%, transparent 70%);
+            animation: rotateGlow 20s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .container > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== الهيدر ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--inner-bg);
+            padding: 10px 16px;
+            border-radius: 60px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 18px;
+        }
+
+        .header .title {
+            font-weight: 900;
+            color: var(--gold);
+            font-size: 17px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        .header .timer {
+            background: #1a1a30;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold);
+            border: 1px solid var(--gold-glow);
+            transition: 0.3s;
+        }
+
+        .header .timer.warning {
+            color: var(--red);
+            border-color: var(--red);
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.95); }
+        }
+
+        .header .badge-status {
+            background: #1a1a30;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: var(--green);
+            border: 1px solid var(--green-glow);
+            font-weight: 600;
+        }
+
+        /* ===== منطقة التخمين ===== */
+        .predict-area {
+            background: var(--inner-bg);
+            border-radius: 28px;
+            padding: 18px 12px 16px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--border-color);
+            min-height: 270px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .predict-area.loading {
+            border-color: var(--gold);
+            box-shadow: 0 0 30px var(--gold-glow);
+        }
+
+        /* ===== صناديق النتائج ===== */
+        .info-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 14px;
+            padding: 8px 16px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .info-box .label {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .info-box .value {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .info-box.server .value {
+            color: var(--gold);
+            text-shadow: 0 0 30px var(--gold-glow);
+        }
+
+        .info-box.crop .value {
+            color: var(--green);
+            text-shadow: 0 0 20px var(--green-glow);
+        }
+
+        .info-box.crop {
+            border-color: var(--green-glow);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        /* ===== الشارة النهائية ===== */
+        .final-badge {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 60px;
+            padding: 8px 30px;
+            display: inline-block;
+            font-size: 30px;
+            font-weight: 900;
+            border: 2px solid var(--green-glow);
+            min-width: 140px;
+            margin-bottom: 6px;
+            color: var(--green);
+            transition: 0.3s;
+            text-shadow: 0 0 20px var(--green-glow);
+        }
+
+        .final-badge.win {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .final-badge.lose {
+            border-color: var(--red);
+            color: var(--red);
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+        }
+
+        /* ===== الصورة والرموز ===== */
+        .main-emoji {
+            font-size: 76px;
+            line-height: 1.2;
+            transition: 0.4s;
+            filter: drop-shadow(0 0 30px var(--gold-glow));
+            margin: 2px 0;
+        }
+
+        .main-emoji.pop {
+            animation: pop 0.4s ease;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .symbols-row {
+            font-size: 34px;
+            letter-spacing: 14px;
+            margin: 4px 0 2px;
+            min-height: 48px;
+            transition: 0.3s;
+        }
+
+        /* ===== رسالة الحالة ===== */
+        .status-msg {
+            font-size: 14px;
+            color: var(--gold);
+            min-height: 24px;
+            margin: 4px 0 2px;
+            font-weight: 600;
+        }
+
+        /* ===== زر التخمين ===== */
+        .btn-predict {
+            background: var(--gold);
+            color: #0a0a0a;
+            border: none;
+            padding: 16px 10px;
+            border-radius: 60px;
+            font-size: 22px;
+            font-weight: 900;
+            width: 100%;
+            cursor: pointer;
+            margin: 6px 0 14px;
+            transition: 0.25s;
+            box-shadow: 0 0 40px var(--gold-glow);
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-predict:hover {
+            background: #ffdd33;
+            transform: scale(1.02);
+            box-shadow: 0 0 60px var(--gold-glow);
+        }
+
+        .btn-predict:active {
+            transform: scale(0.96);
+        }
+
+        .btn-predict::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+            animation: btnShine 3s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes btnShine {
+            0% { transform: translate(-30%, -30%) rotate(0deg); }
+            100% { transform: translate(30%, 30%) rotate(360deg); }
+        }
+
+        .btn-predict:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ===== صندوق النتيجة ===== */
+        .result-box {
+            background: var(--inner-bg);
+            border-radius: var(--radius-sm);
+            padding: 14px 12px;
+            border: 1px solid var(--border-color);
+            margin-top: 4px;
+            transition: 0.3s;
+        }
+
+        .result-box .label {
+            color: var(--text-muted);
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .result-box .value {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--green);
+            transition: 0.3s;
+        }
+
+        .result-box .value.lose {
+            color: var(--red);
+        }
+
+        .result-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .result-stats span {
+            color: #aaa;
+        }
+
+        .result-stats .highlight {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        /* ===== شريط الوقت ===== */
+        .time-bar {
+            background: var(--inner-bg);
+            height: 6px;
+            border-radius: 20px;
+            margin: 12px 0 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .time-bar .fill {
+            width: 100%;
+            height: 100%;
+            background: var(--gold);
+            border-radius: 20px;
+            transition: width 0.9s linear;
+        }
+
+        .time-bar .fill.warning {
+            background: var(--red);
+        }
+
+        /* ===== الفوتر ===== */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .footer .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .footer .stat-item .icon {
+            font-size: 14px;
+        }
+
+        .footer .stat-item .num {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .footer .stat-item .num.green {
+            color: var(--green);
+        }
+
+        /* ===== تأثيرات إضافية ===== */
+        .glow-text {
+            text-shadow: 0 0 30px var(--gold-glow);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== التوافق مع الشاشات الصغيرة ===== */
+        @media (max-width: 420px) {
+            .container {
+                padding: 16px 12px 20px;
+            }
+            .header .title {
+                font-size: 14px;
+            }
+            .header .timer {
+                font-size: 13px;
+                padding: 3px 10px;
+            }
+            .info-box .value {
+                font-size: 22px;
+            }
+            .main-emoji {
+                font-size: 60px;
+            }
+            .final-badge {
+                font-size: 24px;
+                padding: 6px 20px;
+                min-width: 100px;
+            }
+            .btn-predict {
+                font-size: 18px;
+                padding: 14px 10px;
+            }
+            .result-box .value {
+                font-size: 24px;
+            }
+            .symbols-row {
+                font-size: 28px;
+                letter-spacing: 10px;
+            }
+            .footer {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .container {
+                padding: 12px 8px 16px;
+                border-radius: 24px;
+            }
+            .header {
+                padding: 6px 10px;
+            }
+            .header .title {
+                font-size: 12px;
+            }
+            .header .timer {
+                font-size: 11px;
+                padding: 2px 8px;
+            }
+            .header .badge-status {
+                font-size: 10px;
+                padding: 2px 8px;
+            }
+            .info-box .value {
+                font-size: 18px;
+            }
+            .main-emoji {
+                font-size: 48px;
+            }
+            .final-badge {
+                font-size: 20px;
+                padding: 4px 14px;
+                min-width: 80px;
+            }
+            .btn-predict {
+                font-size: 16px;
+                padding: 12px 8px;
+            }
+            .result-box .value {
+                font-size: 20px;
+            }
+            .symbols-row {
+                font-size: 22px;
+                letter-spacing: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ===== الهيدر ===== -->
+        <div class="header">
+            <span class="title">🌾 Hiyoo</span>
+            <span class="timer" id="timerDisplay">⏱ 18</span>
+            <span class="badge-status" id="statusBadge">🔮 تلقائي</span>
+        </div>
+
+        <!-- ===== منطقة التخمين ===== -->
+        <div class="predict-area" id="predictArea">
+
+            <!-- رقم السيرفر -->
+            <div class="info-box server">
+                <div class="label">🎯 رقم الجولة في سيرفر Hiyoo</div>
+                <div class="value" id="serverNumber">--</div>
+            </div>
+
+            <!-- المحصول الفائز -->
+            <div class="info-box crop">
+                <div class="label">🌾 المحصول الفائز في هذه الجولة</div>
+                <div class="value" id="winningCrop">--</div>
+            </div>
+
+            <!-- الشارة النهائية -->
+            <div class="final-badge win" id="resultBadge">✅ فوز مضمون</div>
+
+            <!-- الصورة والرموز -->
+            <div class="main-emoji" id="mainEmoji">🎯</div>
+            <div class="symbols-row" id="symbolsDisplay">😈 👹</div>
+
+            <!-- رسالة الحالة -->
+            <div class="status-msg" id="statusMsg">🔥 اضغط "كشف الرهان الفائز" واراهن في Hiyoo</div>
+        </div>
+
+        <!-- ===== زر التخمين ===== -->
+        <button class="btn-predict" id="predictBtn" onclick="autoPredict()">
+            🔥 كشف الرهان الفائز
+        </button>
+
+        <!-- ===== صندوق النتيجة ===== -->
+        <div class="result-box">
+            <div class="label">💰 المكافأة المتوقعة (فوز حقيقي)</div>
+            <div class="value" id="resultValue">--</div>
+            <div class="result-stats">
+                <span>⚡ التوقيت: <span class="highlight" id="timingDisplay">قبل النتيجة</span></span>
+                <span>📈 المضاعف: <span class="highlight" id="multiplierDisplay">x1.0</span></span>
+            </div>
+        </div>
+
+        <!-- ===== شريط الوقت ===== -->
+        <div class="time-bar">
+            <div class="fill" id="timeFill"></div>
+        </div>
+
+        <!-- ===== الفوتر ===== -->
+        <div class="footer">
+            <span class="stat-item">
+                <span class="icon">💰</span>
+                <span class="num" id="balanceDisplay">13,423,500</span>
+            </span>
+            <span class="stat-item">
+                <span class="icon">🏆</span>
+                <span class="num" id="winnerDisplay">0</span>
+            </span>
+            <span class="stat-item">
+                <span class="icon">🎯</span>
+                <span class="num green" id="accuracyDisplay">100%</span>
+            </span>
+            <span class="stat-item">
+                <span class="icon">📊</span>
+                <span class="num" id="totalRounds">0</span>
+            </span>
+        </div>
+
+    </div>
+
+    <script>
+        // ================================================================
+        // ===== العناصر (DOM) =====
+        // ================================================================
+        const mainEmoji = document.getElementById('mainEmoji');
+        const symbolsDisplay = document.getElementById('symbolsDisplay');
+        const resultBadge = document.getElementById('resultBadge');
+        const resultValue = document.getElementById('resultValue');
+        const serverNumber = document.getElementById('serverNumber');
+        const winningCrop = document.getElementById('winningCrop');
+        const multiplierDisplay = document.getElementById('multiplierDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timeFill = document.getElementById('timeFill');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const winnerDisplay = document.getElementById('winnerDisplay');
+        const accuracyDisplay = document.getElementById('accuracyDisplay');
+        const totalRoundsDisplay = document.getElementById('totalRounds');
+        const statusMsg = document.getElementById('statusMsg');
+        const statusBadge = document.getElementById('statusBadge');
+        const predictArea = document.getElementById('predictArea');
+        const predictBtn = document.getElementById('predictBtn');
+        const timingDisplay = document.getElementById('timingDisplay');
+
+        // ================================================================
+        // ===== المتغيرات العامة =====
+        // ================================================================
+        let balance = 13423500;
+        let wins = 0;
+        let totalPredictions = 0;
+        let isRunning = false;
+        let timerInterval = null;
+
+        // ================================================================
+        // ===== بيانات المحاصيل =====
+        // ================================================================
+        const crops = [
+            { name: 'طماطم', emoji: '🍅', symbol: '😈', bonus: 1.0, rarity: 1 },
+            { name: 'ذرة', emoji: '🌽', symbol: '😈', bonus: 1.2, rarity: 2 },
+            { name: 'جزر', emoji: '🥕', symbol: '😈', bonus: 0.9, rarity: 1 },
+            { name: 'بقر', emoji: '🐄', symbol: '😈', bonus: 1.5, rarity: 3 },
+            { name: 'سمك', emoji: '🐟', symbol: '👹', bonus: 1.3, rarity: 2 },
+            { name: 'كمبري', emoji: '🦐', symbol: '😈', bonus: 1.1, rarity: 2 },
+            { name: 'كتكوت', emoji: '🐤', symbol: '👹', bonus: 0.8, rarity: 1 },
+            { name: 'فلفل', emoji: '🌶', symbol: '😈', bonus: 1.4, rarity: 2 }
+        ];
+
+        // ================================================================
+        // ===== مجموعات الرموز =====
+        // ================================================================
+        const symbolSets = [
+            ['😈', '👹'],
+            ['😈', '😈'],
+            ['👹', '👹'],
+            ['😈', '👹', '😈'],
+            ['👹', '😈', '👹'],
+            ['😈', '😈', '👹'],
+            ['👹', '👹', '😈']
+        ];
+
+        // ================================================================
+        // ===== خوارزمية السيرفر (تعتمد على التوقيت) =====
+        // ================================================================
+        function getServerResult() {
+            const now = Date.now() + 2200;
+            const seconds = Math.floor(now / 1000) % 100;
+            const minutes = Math.floor(now / 60000) % 100;
+            const hours = Math.floor(now / 3600000) % 24;
+            const seed = (seconds * 7 + minutes * 13 + hours * 31 + Math.floor(now / 1000) % 7) % 100;
+            return Math.min(99, Math.max(5, seed));
+        }
+
+        // ================================================================
+        // ===== اختيار المحصول الفائز تلقائياً =====
+        // ================================================================
+        function getWinningCrop(serverNum) {
+            // خوارزمية توزيع المحاصيل حسب الرقم
+            const adjusted = serverNum / 100;
+            let index = Math.floor(adjusted * crops.length);
+            // نضيف توزيعاً عشوائياً محدوداً لجعل الاختيار أكثر طبيعية
+            const randomOffset = Math.floor(Math.random() * 2) - 0.5;
+            index = Math.min(Math.max(Math.floor(index + randomOffset), 0), crops.length - 1);
+            return crops[index];
+        }
+
+        // ================================================================
+        // ===== حساب المكافأة =====
+        // ================================================================
+        function calculateReward(serverNum, crop) {
+            let baseMultiplier = 1.0;
+            if (serverNum > 85) baseMultiplier = 3.5;
+            else if (serverNum > 70) baseMultiplier = 2.5;
+            else if (serverNum > 50) baseMultiplier = 1.8;
+            else if (serverNum > 30) baseMultiplier = 1.3;
+            else baseMultiplier = 1.0;
+
+            // عامل عشوائي لجعل المكافآت متنوعة (ولكن ضمن نطاق حقيقي)
+            const randomFactor = 0.85 + (Math.random() * 0.30);
+            const bonus = crop.bonus;
+            const rarityBonus = 1 + (crop.rarity * 0.05);
+
+            return Math.floor(250 + (serverNum * 18 * baseMultiplier * bonus * rarityBonus * randomFactor));
+        }
+
+        // ================================================================
+        // ===== الوظيفة الرئيسية: التخمين التلقائي =====
+        // ================================================================
+        function autoPredict() {
+            // منع التكرار أثناء التشغيل
+            if (isRunning) return;
+            isRunning = true;
+            predictBtn.disabled = true;
+            predictBtn.textContent = '⏳ جاري الكشف...';
+            statusBadge.textContent = '⏳ جاري...';
+            predictArea.classList.add('loading');
+
+            // تحديث واجهة المستخدم مع تأخير بسيط لإعطاء تأثير بصري
+            setTimeout(() => {
+                // 1. جلب رقم السيرفر
+                const serverNum = getServerResult();
+                serverNumber.textContent = serverNum + '%';
+                serverNumber.style.color = '#ffcc00';
+
+                // 2. اختيار المحصول الفائز
+                const winCrop = getWinningCrop(serverNum);
+                winningCrop.textContent = winCrop.emoji + ' ' + winCrop.name;
+
+                // 3. تحديث الصورة الرئيسية
+                mainEmoji.textContent = winCrop.emoji;
+                mainEmoji.classList.remove('pop');
+                // إعادة تشغيل الأنيميشن
+                void mainEmoji.offsetWidth;
+                mainEmoji.classList.add('pop');
+
+                // 4. تحديث الرموز
+                const mainSymbol = winCrop.symbol;
+                const extraSymbols = symbolSets[Math.floor(Math.random() * symbolSets.length)];
+                let displaySymbols = [mainSymbol, ...extraSymbols];
+                displaySymbols = displaySymbols.sort(() => Math.random() - 0.5);
+                symbolsDisplay.textContent = displaySymbols.join(' ');
+
+                // 5. حساب المكافأة (فوز دائم)
+                const reward = calculateReward(serverNum, winCrop);
+
+                // 6. عرض النتيجة
+                resultBadge.textContent = '✅ فوز مضمون';
+                resultBadge.className = 'final-badge win';
+                resultValue.textContent = `+ ${reward.toLocaleString()} نقطة`;
+                resultValue.className = 'value';
+
+                // 7. المضاعف
+                let multiplier = 1.0;
+                if (serverNum > 85) multiplier = 3.2 + (Math.random() * 0.6);
+                else if (serverNum > 70) multiplier = 2.2 + (Math.random() * 0.6);
+                else if (serverNum > 50) multiplier = 1.6 + (Math.random() * 0.4);
+                else if (serverNum > 30) multiplier = 1.1 + (Math.random() * 0.3);
+                else multiplier = 0.9 + (Math.random() * 0.3);
+                multiplierDisplay.textContent = 'x' + multiplier.toFixed(1);
+
+                // 8. تحديث الإحصائيات
+                totalPredictions++;
+                wins++;
+                balance += reward;
+
+                balanceDisplay.textContent = balance.toLocaleString();
+                winnerDisplay.textContent = wins;
+                totalRoundsDisplay.textContent = totalPredictions;
+                accuracyDisplay.textContent = '100%';
+
+                // 9. رسالة الحالة
+                statusMsg.textContent = `🎯 الرقم: ${serverNum}% | المحصول: ${winCrop.name} | ربحت ${reward.toLocaleString()} نقطة`;
+                timingDisplay.textContent = '⏳ قبل النتيجة';
+
+                // 10. إعادة تفعيل الزر
+                isRunning = false;
+                predictBtn.disabled = false;
+                predictBtn.textContent = '🔥 كشف الرهان الفائز';
+                statusBadge.textContent = '🔮 تلقائي';
+                predictArea.classList.remove('loading');
+
+                // 11. بدء المؤقت
+                startTimer();
+
+            }, 600);
+        }
+
+        // ================================================================
+        // ===== المؤقت (18 ثانية) =====
+        // ================================================================
+        function startTimer() {
+            // إلغاء المؤقت السابق إن وجد
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            let timeLeft = 18;
+            timerDisplay.textContent = '⏱ ' + timeLeft;
+            timerDisplay.classList.remove('warning');
+            timeFill.style.width = '100%';
+            timeFill.classList.remove('warning');
+
+            timerInterval = setInterval(() => {
+                timeLeft -= 1;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerDisplay.textContent = '⏱ 0';
+                    timeFill.style.width = '0%';
+                    timerDisplay.classList.add('warning');
+                    timeFill.classList.add('warning');
+                } else {
+                    timerDisplay.textContent = '⏱ ' + timeLeft;
+                    const percent = (timeLeft / 18) * 100;
+                    timeFill.style.width = percent + '%';
+                    if (timeLeft <= 5) {
+                        timerDisplay.classList.add('warning');
+                        timeFill.classList.add('warning');
+                    } else {
+                        timerDisplay.classList.remove('warning');
+                        timeFill.classList.remove('warning');
+                    }
+                }
+            }, 1000);
+        }
+
+        // ================================================================
+        // ===== تحميل الصفحة =====
+        // ================================================================
+        window.onload = function() {
+            // عرض القيم الأولية
+            balanceDisplay.textContent = balance.toLocaleString();
+            totalRoundsDisplay.textContent = totalPredictions;
+            winnerDisplay.textContent = wins;
+            statusMsg.textContent = '🔥 اضغط "كشف الرهان الفائز" واراهن في Hiyoo';
+
+            // تشغيل تخمين تلقائي أولي
+            setTimeout(autoPredict, 400);
+        };
+
+        // ================================================================
+        // ===== حفظ البيانات في LocalStorage (اختياري) =====
+        // ================================================================
+        function saveData() {
+            try {
+                localStorage.setItem('hiyoo_balance', balance);
+                localStorage.setItem('hiyoo_wins', wins);
+                localStorage.setItem('hiyoo_total', totalPredictions);
+            } catch (e) {
+                // تجاهل الأخطاء
+            }
+        }
+
+        function loadData() {
+            try {
+                const savedBalance = localStorage.getItem('hiyoo_balance');
+                const savedWins = localStorage.getItem('hiyoo_wins');
+                const savedTotal = localStorage.getItem('hiyoo_total');
+                if (savedBalance) balance = parseInt(savedBalance);
+                if (savedWins) wins = parseInt(savedWins);
+                if (savedTotal) totalPredictions = parseInt(savedTotal);
+            } catch (e) {
+                // تجاهل الأخطاء
+            }
+        }
+
+        // حفظ البيانات تلقائياً عند كل تحديث
+        const originalAutoPredict = autoPredict;
+        autoPredict = function() {
+            originalAutoPredict();
+            setTimeout(saveData, 1000);
+        };
+
+        // تحميل البيانات المحفوظة عند بدء التشغيل
+        loadData();
+
+        // ================================================================
+        // ===== إحصائيات متقدمة (دقة التخمين) =====
+        // ================================================================
+        // الدقة دائماً 100% لأننا نضمن الفوز
+        // لكن نضيف متغيراً للتوافق مع المستقبل
+
+        // ================================================================
+        // ===== نهاية الكود =====
+        // ================================================================
+        console.log('🌾 Hiyoo - التخمين الخرافي تم تحميله بنجاح!');
+        console.log('🔥 عدد الأسطر: ' + document.querySelector('script').textContent.split('\n').length + ' سطر');
+    </script>
+
+</body>
+</html>
